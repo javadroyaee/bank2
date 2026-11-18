@@ -34,8 +34,17 @@ jobs:
       - name: Build Release APK
         run: gradle assembleRelease --no-daemon
 
+      - name: Check Generated APK
+        run: ls -la app/build/outputs/apk/release/
+
+      - name: Upload APK as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BankSmsPopup-Release-APK
+          path: app/build/outputs/apk/release/*.apk
+
       - name: Publish Release APK
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "v1.0.${{ github.run_number }}" app/build/outputs/apk/release/app-release.apk --title "Release v1.0.${{ github.run_number }}" --notes "JRweb.ir Release Build"
+          gh release create "v1.0.${{ github.run_number }}" app/build/outputs/apk/release/*.apk --title "Release v1.0.${{ github.run_number }}" --notes "JRweb.ir Release Build"
