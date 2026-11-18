@@ -21,22 +21,21 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.7'
-          cache-disabled: true
+      - name: Install Gradle
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-8.7-bin.zip
+          unzip -q gradle-8.7-bin.zip -d /opt/gradle
+          echo "/opt/gradle/gradle-8.7/bin" >> $GITHUB_PATH
 
       - name: Generate Release Keystore
         run: |
           keytool -genkeypair -v -keystore app/release.jks -alias jrweb -keyalg RSA -keysize 2048 -validity 10000 -storepass 123456 -keypass 123456 -dname "CN=JRweb, OU=Dev, O=JRweb, L=Tehran, S=Tehran, C=IR"
 
       - name: Build Release APK
-        run: gradle assembleRelease --no-daemon --stacktrace
+        run: gradle assembleRelease --no-daemon
 
       - name: Publish Release APK
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v1.0.${{ github.run_number }}
-          name: Release v1.0.${{ github.run_number }}
-          files: app/build/outputs/apk/release/app-release.apk
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v1.0.${{ github.run_number }}" app/build/outputs/apk/release/app-release.apk --title "Release v1.0.${{ github.run_number }}" --notes "JRweb.ir Release Build"
